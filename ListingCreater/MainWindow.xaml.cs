@@ -84,7 +84,7 @@ namespace ListingCreater
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void SelectProjectDirButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
@@ -97,7 +97,7 @@ namespace ListingCreater
             }
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void CreateListingButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog();
             dialog.FileName = "Листинг"; // Default file name
@@ -160,7 +160,7 @@ namespace ListingCreater
             }
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void MenuFileSave_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog();
             dialog.FileName = "Конфигурация"; // Default file name
@@ -182,7 +182,7 @@ namespace ListingCreater
             }
         }
 
-        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        private void MenuFileLoad_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.OpenFileDialog();
             dialog.FileName = "Конфигурация"; // Default file name
