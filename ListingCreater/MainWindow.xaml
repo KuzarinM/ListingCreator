@@ -6,58 +6,66 @@
         xmlns:local="clr-namespace:ListingCreater"
         mc:Ignorable="d"
         Title="Автоматический генератор листинга" Height="450" Width="800">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="100"/>
-            <ColumnDefinition Width="*" MinWidth="100"/>
-            <ColumnDefinition Width="*" MinWidth="100"/>
-        </Grid.ColumnDefinitions>
-        <DockPanel >
-            <Label DockPanel.Dock="Top">Выбор расширений файлов</Label>
-            <DockPanel DockPanel.Dock="Top">
-                <Button x:Name="ButtonAddExtention" DockPanel.Dock="Right" MinWidth="70" Click="ButtonAddExtention_Click">Добавить</Button>
-                <TextBox x:Name="extentionInput"/>
-            </DockPanel>
-            <ScrollViewer>
-                <ListBox x:Name="extentionList" MouseDoubleClick="extentionList_MouseDoubleClick">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Файл">
+                <MenuItem Header="Сохранить" Click="MenuItem_Click" />
+                <MenuItem Header="Загрузить" Click="MenuItem_Click_1"/>
+            </MenuItem>
+        </Menu>
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="100"/>
+                <ColumnDefinition Width="*" MinWidth="100"/>
+                <ColumnDefinition Width="*" MinWidth="100"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel >
+                <Label DockPanel.Dock="Top">Выбор расширений файлов</Label>
+                <DockPanel DockPanel.Dock="Top">
+                    <Button x:Name="ButtonAddExtention" DockPanel.Dock="Right" MinWidth="70" Click="ButtonAddExtention_Click">Добавить</Button>
+                    <TextBox x:Name="extentionInput"/>
+                </DockPanel>
+                <ScrollViewer>
+                    <ListBox x:Name="extentionList" MouseDoubleClick="extentionList_MouseDoubleClick">
 
-                </ListBox>
-            </ScrollViewer>
+                    </ListBox>
+                </ScrollViewer>
 
-        </DockPanel>
-        <GridSplitter x:Name="Splitter1" Height="100" Width="10"/>
-        <DockPanel Grid.Column="1">
-            <Label DockPanel.Dock="Top">Выбор папок, которые игнорируем</Label>
-            <DockPanel DockPanel.Dock="Top">
-                <Button x:Name="buttonAddIgnoreF" DockPanel.Dock="Right" MinWidth="70" Click="ButtonAddIgnoreF_Click" >Добавить</Button>
-                <TextBox x:Name="ignoreFInput"/>
             </DockPanel>
-            <ScrollViewer>
-                <ListBox x:Name="ignoreFList" MouseDoubleClick="ignoreFList_MouseDoubleClick" >
+            <GridSplitter x:Name="Splitter1" Height="100" Width="10"/>
+            <DockPanel Grid.Column="1">
+                <Label DockPanel.Dock="Top">Выбор папок, которые игнорируем</Label>
+                <DockPanel DockPanel.Dock="Top">
+                    <Button x:Name="buttonAddIgnoreF" DockPanel.Dock="Right" MinWidth="70" Click="ButtonAddIgnoreF_Click" >Добавить</Button>
+                    <TextBox x:Name="ignoreFInput"/>
+                </DockPanel>
+                <ScrollViewer>
+                    <ListBox x:Name="ignoreFList" MouseDoubleClick="ignoreFList_MouseDoubleClick" >
 
-                </ListBox>
-            </ScrollViewer>
-        </DockPanel>
-        <GridSplitter x:Name="Splitter2" Height="100" Width="10"/>
-        <DockPanel Grid.Column="2" LastChildFill="False">
-            <Label DockPanel.Dock="Top">Выбор папки проекта.</Label>
-            <DockPanel DockPanel.Dock="Top">
-                <Button DockPanel.Dock="Right" Click="Button_Click">Выбрать папку</Button>
-                <TextBox DockPanel.Dock="Right" x:Name="projectFolderText"></TextBox>
+                    </ListBox>
+                </ScrollViewer>
             </DockPanel>
-            <Label DockPanel.Dock="Top">Дополнительные функции</Label>
-            <DockPanel DockPanel.Dock="Top">
-                <CheckBox DockPanel.Dock="Top" x:Name="tabRemove" IsChecked="True">Убрать из листинга все табы</CheckBox>
-                <Label DockPanel.Dock="Top">Кол-во столбцов лиснига</Label>
-                <TextBox DockPanel.Dock="Top" x:Name="columnCount">3</TextBox>
-                <Label DockPanel.Dock="Top">Размер шрифта для заголовков листинга</Label>
-                <TextBox DockPanel.Dock="Top" x:Name="titleSize">7</TextBox>
-                <Label DockPanel.Dock="Top">Размер шрифта для текста листинга</Label>
-                <TextBox DockPanel.Dock="Top" x:Name="textSize">6</TextBox>
+            <GridSplitter x:Name="Splitter2" Height="100" Width="10"/>
+            <DockPanel Grid.Column="2" LastChildFill="False">
+                <Label DockPanel.Dock="Top">Выбор папки проекта.</Label>
+                <DockPanel DockPanel.Dock="Top">
+                    <Button DockPanel.Dock="Right" Click="Button_Click">Выбрать папку</Button>
+                    <TextBox DockPanel.Dock="Right" x:Name="projectFolderText"></TextBox>
+                </DockPanel>
+                <Label DockPanel.Dock="Top">Дополнительные функции</Label>
+                <DockPanel DockPanel.Dock="Top">
+                    <CheckBox DockPanel.Dock="Top" x:Name="tabRemove" IsChecked="True">Убрать из листинга все табы</CheckBox>
+                    <Label DockPanel.Dock="Top">Кол-во столбцов лиснига</Label>
+                    <TextBox DockPanel.Dock="Top" x:Name="columnCount">3</TextBox>
+                    <Label DockPanel.Dock="Top">Размер шрифта для заголовков листинга</Label>
+                    <TextBox DockPanel.Dock="Top" x:Name="titleSize">7</TextBox>
+                    <Label DockPanel.Dock="Top">Размер шрифта для текста листинга</Label>
+                    <TextBox DockPanel.Dock="Top" x:Name="textSize">6</TextBox>
+                </DockPanel>
+                <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
+                    <Button DockPanel.Dock="Bottom" Click="Button_Click_1">Создать листинг</Button>
+                </DockPanel>
             </DockPanel>
-            <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
-                <Button DockPanel.Dock="Bottom" Click="Button_Click_1">Создать листинг</Button>
-            </DockPanel>
-        </DockPanel>
-    </Grid>
+        </Grid>
+    </DockPanel>
 </Window>

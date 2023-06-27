@@ -47,14 +47,14 @@ namespace ServiceStationBusinessLogic.OfficePackage
 						Size = info.ListingTitleTextSoze,
 						Bold= true,
 						JustificationType = WordJustificationType.Both,
-					}
+                        ColumnCount = info.ColumnsCount
+                    }
 				});
 
 				var texts = info.OutputTabAndReturns? File.ReadAllLines(item).Select(run => ($"{run}\n", (WordTextProperties?)null)).ToList()
 					: new() {(File.ReadAllText(item).Replace("\t","").Replace("\n",""),null)};
                 CreateParagraph(new WordParagraph
                 {
-                    //Texts = File.ReadAllLines(item).Select(run => ($"{run.Replace("\t","")}\n", (WordTextProperties?)null)).ToList(),
 					Texts = texts,
 					TextProperties = new()
                     {
