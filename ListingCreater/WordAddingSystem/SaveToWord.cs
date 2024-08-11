@@ -54,11 +54,12 @@ namespace ServiceStationBusinessLogic.OfficePackage.Implements
 				});
 			}
 
-            properties.AppendChild(new Columns()
-            {
-                EqualWidth = true,
-                ColumnCount = (Int16Value)paragraphProperties.ColumnCount,
-            });
+			properties.AppendChild(new Columns()
+			{
+				EqualWidth = true,
+				ColumnCount = (Int16Value)paragraphProperties.ColumnCount,
+				Space = paragraphProperties.BetweenColumnSpace.ToString()
+			});
 
             properties.AppendChild(new SpacingBetweenLines
 			{
@@ -207,14 +208,14 @@ namespace ServiceStationBusinessLogic.OfficePackage.Implements
 
 		#endregion
 
-		protected override WordTextProperties DefaultTextProperies => new()
+		public override WordTextProperties DefaultTextProperies => new()
 		{
 			Size = 14,
 			Bold = false,
 			JustificationType = WordJustificationType.Both
 		};
 
-		protected override void CreateWord()
+		public override void CreateWord()
 		{
 			stream = new MemoryStream();
 
@@ -224,7 +225,7 @@ namespace ServiceStationBusinessLogic.OfficePackage.Implements
 			_docBody = mainPart.Document.AppendChild(new Body());
 		}
 
-		protected override void CreateMarkeredList(MarkeredList list)
+		public override void CreateMarkeredList(MarkeredList list)
 		{
 			if (_docBody == null)
 			{
@@ -237,7 +238,7 @@ namespace ServiceStationBusinessLogic.OfficePackage.Implements
 			MakeList(list);
 		}
 
-		protected override void CreateParagraph(WordParagraph paragraph)
+		public override void CreateParagraph(WordParagraph paragraph)
 		{
 			if (_docBody == null || paragraph == null)
 			{
@@ -246,11 +247,22 @@ namespace ServiceStationBusinessLogic.OfficePackage.Implements
 			var docParagraph = MakeParagraph(paragraph);
 			if (paragraph == null)
 				return;
-			_docBody.AppendChild(docParagraph);
 
+			if(paragraph.TextProperties?.PageMagin != null)
+			{
+				PageMargin pageMargin = new PageMargin()
+				{
+					Top = paragraph.TextProperties.PageMagin.Top,
+					Bottom = paragraph.TextProperties.PageMagin.Bottom,
+                    Left = (UInt32Value?)paragraph.TextProperties.PageMagin.Left,
+				};
+                docParagraph.Append(pageMargin);
+            }
+
+            _docBody.AppendChild(docParagraph);
 		}
 
-		protected override MemoryStream SaveWord()
+		public override MemoryStream SaveWord()
 		{
 			if (_docBody == null || _wordDocument == null)
 			{

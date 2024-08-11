@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListingConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <OutputTabAndReturns>false</OutputTabAndReturns>
+  <version>1</version>
+  <Name />
+  <Extentions>
+    <string>.cs</string>
+  </Extentions>
+  <IgnoreFolder>
+    <string>/bin/</string>
+    <string>/obj/</string>
+  </IgnoreFolder>
+  <ColumnsCount>3</ColumnsCount>
+  <ListingTextSize>7</ListingTextSize>
+  <ListingTitleTextSize>7</ListingTitleTextSize>
+</ListingConfiguration>

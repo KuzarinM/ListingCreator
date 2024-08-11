@@ -1,4 +1,5 @@
-﻿using ServiceStationBusinessLogic.OfficePackage.HelperModels.Word.Enums;
+﻿using ListingCreater.WordAddingSystem.Word.Models;
+using ServiceStationBusinessLogic.OfficePackage.HelperModels.Word.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,9 @@ namespace ServiceStationBusinessLogic.OfficePackage.HelperModels.Word.Models
 		public WordJustificationType? JustificationType { get; set; } = null;
 
 		public int ColumnCount { get; set; } = 1;
-	}
+
+		public int BetweenColumnSpace { get; set; } = 0;
+
+		public WordPageMargin? PageMagin {  get; set; }
+    }
 }

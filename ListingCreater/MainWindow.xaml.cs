@@ -1,6 +1,11 @@
 ﻿using ListingAutoCreater.Models;
 using ListingCreater.Logic;
+using ListingCreater.Logic.Handlers;
 using ListingCreater.Models;
+using ListingCreater.Models.Internal;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ServiceStationBusinessLogic.OfficePackage;
 using ServiceStationBusinessLogic.OfficePackage.Implements;
@@ -28,201 +33,229 @@ namespace ListingCreater
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly AbstractSaveToWord _saveToWord;
-        private readonly FileFinder _finder;
-        private ListingConfiguration configuration;
+        private readonly IMediator _mediator;
+        private readonly ILogger _logger;
+        private readonly Microsoft.Win32.SaveFileDialog _saveListingDialog;
+        private readonly CommonOpenFileDialog _projectDirDialogDialog;
 
-        public MainWindow()
+        public MainWindow(ILogger<MainWindow> logger, IMediator mediator)
         {
             InitializeComponent();
-            _saveToWord = new SaveToWord();
-            _finder = new FileFinder();
-            configuration = new();
+            _mediator = mediator;
+            _logger = logger;
+            _saveListingDialog = new SaveFileDialog();
+            _projectDirDialogDialog = new CommonOpenFileDialog();
         }
 
         private void ButtonAddExtention_Click(object sender, RoutedEventArgs e)
         {
-            string text = extentionInput.Text;
-
-            if (!string.IsNullOrEmpty(text))
+            SafeExecute(() =>
             {
-                extentionList.Items.Add($".{text}");
-                extentionInput.Text = "";
-                configuration.Extentions.Add($".{text}");
-            }
+                var res = _mediator.Send(new AddExtentionCommand()
+                {
+                    ExtentionText = extentionInput.Text,
+                    ExtentionInput = extentionInput,
+                    ExtentionList = extentionList,
+                }).Result;
+
+                if (!res)
+                {
+                    MessageBox.Show("Не удалось добавить расширение. Возможно оно уже есть", "Ошибка добавления расширения");
+                }
+            });
         }
 
         private void extentionList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var element = extentionList.SelectedItem;
-            if(MessageBox.Show($"Вы уверены, что хотите удалить расширение {element}","Подтверждение удаления.",MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            SafeExecute(() =>
             {
-                extentionList.Items.Remove(element);
-                configuration.Extentions.Remove(element.ToString());
-            }
+                var element = extentionList.SelectedItem;
+                if (MessageBox.Show($"Вы уверены, что хотите удалить расширение {element}", "Подтверждение удаления.", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var res = _mediator.Send(new RemoveExtentionCommand()
+                    {
+                        SelectedItem = element,
+                        ExtentionList = extentionList,
+                    }).Result;
+
+                    if (!res)
+                    {
+                        MessageBox.Show("Не удалось удалить расширение.", "Ошибка удаления расширения");
+                    }
+                }
+            });
         }
 
         private void ButtonAddIgnoreF_Click(object sender, RoutedEventArgs e)
         {
-            string text = ignoreFInput.Text;
-
-            if (!string.IsNullOrEmpty(text))
+            SafeExecute(() =>
             {
-                ignoreFList.Items.Add($"{text}");
-                ignoreFInput.Text = "";
-                configuration.IgnoreFolder.Add($"{text}");
-            }
+                var res = _mediator.Send(new AddIgnoreDirPatternCommand()
+                {
+                    IgnoreDirText = ignoreFInput.Text,
+                    IgnoreDirInput = ignoreFInput,
+                    IgnoreDirList = ignoreFList,
+                }).Result;
+
+                if (!res)
+                {
+                    MessageBox.Show("Не удалось добавить паттерн игнорирования. Возможно он уже есть", "Ошибка добавления паттерна");
+                }
+            });
         }
 
         private void ignoreFList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var element = ignoreFList.SelectedItem;
-            if (MessageBox.Show($"Вы уверены, что хотите удалить игнорируему папку {element}", "Подтверждение удаления.", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            SafeExecute(() =>
             {
-                ignoreFList.Items.Remove(element);
-                configuration.IgnoreFolder.Remove(element.ToString());
-            }
+                var element = ignoreFList.SelectedItem;
+                if (MessageBox.Show($"Вы уверены, что хотите удалить паттерн игнора {element}", "Подтверждение удаления.", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var res = _mediator.Send(new RemoveIgnoreDirPatternCommand()
+                    {
+                        SelectedItem = element,
+                        IgnoreDirList = ignoreFList,
+                    }).Result;
+
+                    if (!res)
+                    {
+                        MessageBox.Show("Не удалось удалить паттерн игнорирования.", "Ошибка удаления паттерна игнорирования");
+                    }
+                }
+            });
         }
 
         private void SelectProjectDirButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            CommonFileDialogResult result = dialog.ShowDialog();
-
-            if(result == CommonFileDialogResult.Ok)
+            SafeExecute(() =>
             {
-                projectFolderText.Text = dialog.FileName;
-                configuration.ProjectDirectoryName = dialog.FileName;
-            }
+                var res = _mediator.Send(new SetProjectDirCommand()
+                {
+                    SelectDialog = _projectDirDialogDialog,
+                    ProjectFolderInput = projectFolderText
+
+                }).Result;
+
+                if (string.IsNullOrEmpty(res))
+                {
+                    MessageBox.Show("Не удалось выбрать папку проекта.", "Ошибка выбора папки проекта");
+                }
+            });
         }
 
         private void CreateListingButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.SaveFileDialog();
-            dialog.FileName = "Листинг"; // Default file name
-            dialog.DefaultExt = ".docx"; // Default file extension
-            dialog.Filter = "Word Document (.docx)|*.docx"; // Filter files by extension
 
-            bool? res = dialog.ShowDialog();
-            if (res != null && res.Value && !string.IsNullOrEmpty(projectFolderText.Text) && extentionList.Items.Count>0)
+            SafeExecute(() =>
             {
-                try
+                var filepath = _mediator.Send(new SelectListingDestonationQuery()
                 {
-                    string filename = dialog.FileName;
+                    SelectDialog = _saveListingDialog,
+                }).Result;
 
-                    var data = _finder.GetAllFileInFolder(new FileSearchModel
-                    {
-                        FolderPath = configuration.ProjectDirectoryName,
-                        RequredExtentions = configuration.Extentions,
-                        IgnoredFolderName = configuration.IgnoreFolder,
-                    });
-
-
-                    int cc = configuration.ColumnsCount;
-                    int.TryParse(columnCount.Text, out cc);
-                    configuration.ColumnsCount = cc;
-
-                    int tiS = configuration.ListingTitleTextSoze;
-                    int.TryParse(titleSize.Text, out tiS);
-                    configuration.ListingTitleTextSoze = tiS;
-
-                    int tS = configuration.ListingTextSize;
-                    int.TryParse(textSize.Text, out tS);
-                    configuration.ListingTextSize = tiS;
-
-                    configuration.OutputTabAndReturns = !tabRemove.IsChecked.Value;
-
-                    MemoryStream file = _saveToWord.CreateFaultListDoc(new DocumentInfo
-                    {
-                        FileName = filename,
-                        Files = data,
-                        HomeProjectDirectory = configuration.ProjectDirectoryName+"\\",
-                        OutputTabAndReturns = configuration.OutputTabAndReturns,
-                        ColumnsCount = configuration.ColumnsCount,
-                        ListingTitleTextSoze = configuration.ListingTitleTextSoze,
-                        ListingTextSize= configuration.ListingTextSize
-                    });
-
-                    using var fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
-                    file.WriteTo(fileStream);
-
-                    MessageBox.Show("Листинг создан!", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch(Exception ex)                 
+                if (string.IsNullOrEmpty(filepath))
                 {
-                    MessageBox.Show($"Ошибка при создании листинга:{ex.Message}", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Не удалось выбрать папку проекта.", "Ошибка выбора папки проекта");
+                    return;
                 }
-            }
-            else
-            {
-                MessageBox.Show("Введите данные для создания листинга", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+
+                if(string.IsNullOrEmpty(projectFolderText.Text) || extentionList.Items.Count == 0)
+                {
+                    MessageBox.Show("Введите данные для создания листинга", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                _mediator.Send(new SaveCurrentConfigCommand()
+                {
+                    ColumnsCountText = columnCount,
+                    TitleSizeText = titleSize,
+                    TextSizeText = textSize,
+                    TabRemoveBox = tabRemove
+                }).Wait();
+
+                _mediator.Send(new CreateListingDocumentCommand()
+                {
+                    DestonationFilename = filepath,
+                }).Wait();
+
+                MessageBox.Show("Листинг создан!", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            });
         }
 
         private void MenuFileSave_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.SaveFileDialog();
-            dialog.FileName = "Конфигурация"; // Default file name
-            dialog.DefaultExt = ".xml"; // Default file extension
-            dialog.Filter = "XML Document (.xml)|*.xml"; // Filter files by extension
-
-            bool? res = dialog.ShowDialog();
-            if(res != null && res.Value)
+            SafeExecute(() =>
             {
-                try
+                _mediator.Send(new SaveCurrentConfigCommand()
                 {
-                    string filename = dialog.FileName;
-                    SaveData(configuration, filename, "Configuration_v1.0");
-                }
-                catch(Exception ex)
+                    ColumnsCountText = columnCount,
+                    TitleSizeText = titleSize,
+                    TextSizeText = textSize,
+                    TabRemoveBox = tabRemove
+                }).Wait();
+
+                var filename = _mediator.Send(new SelectConfigSaveFileQuery()
                 {
-                    MessageBox.Show($"Ошибка при сохранении конфигурации:{ex.Message}", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
+                    SaveFileDialog = new SaveFileDialog()
+                }).Result;
+
+                if (string.IsNullOrEmpty(filename))
+                    throw new Exception("Не выбран файл для сохранения");
+
+                _mediator.Send(new SaveConfigurationToFileCommand()
+                {
+                    Filepath = filename
+                }).Wait();
+
+                MessageBox.Show("Конфигурация сохранена", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Information);
+            });
         }
 
         private void MenuFileLoad_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.FileName = "Конфигурация"; // Default file name
-            dialog.DefaultExt = ".xml"; // Default file extension
-            dialog.Filter = "XML Document (.xml)|*.xml"; // Filter files by extension
-
-            bool? res = dialog.ShowDialog();
-            if (res != null && res.Value)
+            SafeExecute(() =>
             {
-                string filename = dialog.FileName;
-                if (MessageBox.Show($"Вы уверены, что хотите загрузить настройки из файлf {filename}", "Подтверждение загрузка.", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                var filename = _mediator.Send(new SelectConfigSaveFileQuery()
                 {
-                    return;
-                }
-                try
-                {  
-                    configuration = ListingConfiguration.Create(LoadData(filename));
-                    extentionList.Items.Clear();
-                    foreach (var item in configuration.Extentions)
-                    {
-                        extentionList.Items.Add(item);
-                    }
-                    ignoreFList.Items.Clear();
-                    foreach (var item in configuration.IgnoreFolder)
-                    {
-                        ignoreFList.Items.Add(item);
-                    }
-                    columnCount.Text = configuration.ColumnsCount.ToString();
-                    titleSize.Text = configuration.ListingTitleTextSoze.ToString();
-                    textSize.Text = configuration.ListingTextSize.ToString();
-                    tabRemove.IsChecked = !configuration.OutputTabAndReturns;
-                    projectFolderText.Text = configuration.ProjectDirectoryName;
+                    SaveFileDialog = new OpenFileDialog()
+                }).Result;
 
-                }
-                catch (Exception ex)
+                if (string.IsNullOrEmpty(filename))
+                    throw new Exception("Не выбран файл для загрузки");
+
+                _mediator.Send(new LoadConfigurationFromFileCommand()
                 {
-                    MessageBox.Show($"Ошибка при сохранении конфигурации:{ex.Message}", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                    Filename = filename,
+                    TextSizeText= textSize,
+                    TitleSizeText= titleSize,
+                    TabRemoveBox = tabRemove,
+                    ColumnsCountText = columnCount,
+                    ExtentionList = extentionList,
+                    IgnoreList = ignoreFList
+                }).Wait();
+
+                MessageBox.Show("Конфигурация загружена", "Результат работы", MessageBoxButton.OK, MessageBoxImage.Information);
+            });
+        }
+
+        private void extentionInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.IsFocused && e.Key == Key.Enter)
+            {
+                ButtonAddExtention_Click(this, new RoutedEventArgs());
             }
         }
+
+        private void ignoreFInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.IsFocused && e.Key == Key.Enter)
+            {
+                ButtonAddIgnoreF_Click(this, new RoutedEventArgs());
+            }
+        }
+
+
 
         private XElement? LoadData(string filename) => XDocument.Load(filename)?.Root;
 
@@ -230,5 +263,21 @@ namespace ListingCreater
         {
             new XDocument(new XElement(xmlNodeName, data.GetXElement)).Save(filename);
         }
+
+
+        private void SafeExecute(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error on action");
+                MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButton.OK);
+            }
+        }
+
+
     }
 }

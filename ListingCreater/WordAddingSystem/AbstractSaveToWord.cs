@@ -113,14 +113,14 @@ namespace ServiceStationBusinessLogic.OfficePackage
             return Encoding.UTF8;
         }
 
-		protected abstract WordTextProperties DefaultTextProperies { get; }
+		public abstract WordTextProperties DefaultTextProperies { get; }
 
-		protected abstract void CreateWord();
+		public abstract void CreateWord();
 
-		protected abstract void CreateParagraph(WordParagraph paragraph);
+		public abstract void CreateParagraph(WordParagraph paragraph);
 
-		protected abstract void CreateMarkeredList(MarkeredList list);
+		public abstract void CreateMarkeredList(MarkeredList list);
 
-		protected abstract MemoryStream SaveWord();
+		public abstract MemoryStream SaveWord();
 	}
 }

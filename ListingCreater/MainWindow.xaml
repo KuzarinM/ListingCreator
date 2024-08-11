@@ -23,7 +23,7 @@
                 <Label DockPanel.Dock="Top">Выбор расширений файлов</Label>
                 <DockPanel DockPanel.Dock="Top">
                     <Button x:Name="ButtonAddExtention" DockPanel.Dock="Right" MinWidth="70" Click="ButtonAddExtention_Click">Добавить</Button>
-                    <TextBox x:Name="extentionInput"/>
+                    <TextBox x:Name="extentionInput" KeyDown="extentionInput_KeyDown"/>
                 </DockPanel>
                 <ScrollViewer>
                     <ListBox x:Name="extentionList" MouseDoubleClick="extentionList_MouseDoubleClick">
@@ -37,7 +37,7 @@
                 <Label DockPanel.Dock="Top">Выбор папок, которые игнорируем</Label>
                 <DockPanel DockPanel.Dock="Top">
                     <Button x:Name="buttonAddIgnoreF" DockPanel.Dock="Right" MinWidth="70" Click="ButtonAddIgnoreF_Click" >Добавить</Button>
-                    <TextBox x:Name="ignoreFInput"/>
+                    <TextBox x:Name="ignoreFInput" KeyDown="ignoreFInput_KeyDown"/>
                 </DockPanel>
                 <ScrollViewer>
                     <ListBox x:Name="ignoreFList" MouseDoubleClick="ignoreFList_MouseDoubleClick" >
