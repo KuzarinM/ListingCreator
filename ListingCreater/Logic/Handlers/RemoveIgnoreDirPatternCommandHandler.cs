@@ -38,7 +38,7 @@ namespace ListingCreater.Logic.Handlers
             request.IgnoreDirList.Items.Remove(request.SelectedItem);
 
             if (configuration.IgnoreFolder.Any(x => x == selectedText))
-                configuration.Extentions.Remove(selectedText);
+                configuration.IgnoreFolder.Remove(selectedText);
 
             return true;
         }
